@@ -39,18 +39,13 @@ class ManoloStyle(styles.DefaultInteractorStyle):
             x, y, z = self.viewer.get_voxel_coord_by_screen_pos(mouse_x, mouse_y, self.picker)
 
             print(f"Click in position: {x}, {y}, {z}")
-            mask = self.viewer.slice_.current_mask.matrix[1:, 1:, 1:]
-            mask[z, y, x] = 254
+            mask = self.viewer.get_actual_mask()
+            mask_matrix = mask.matrix[1:, 1:, 1:]
+            mask_matrix[z, y, x] = 254
 
-            self.viewer.slice_.buffer_slices['AXIAL'].discard_mask()
-            self.viewer.slice_.buffer_slices['CORONAL'].discard_mask()
-            self.viewer.slice_.buffer_slices['SAGITAL'].discard_mask()
+            self.viewer.discard_mask_cache(all_orientations=True)
 
-            self.viewer.slice_.buffer_slices['AXIAL'].discard_vtk_mask()
-            self.viewer.slice_.buffer_slices['CORONAL'].discard_vtk_mask()
-            self.viewer.slice_.buffer_slices['SAGITAL'].discard_vtk_mask()
-
-            self.viewer.slice_.current_mask.was_edited = True
+            mask.was_edited = True
             Publisher.sendMessage('Reload actual slice')
 
 
