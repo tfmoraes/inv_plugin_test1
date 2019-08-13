@@ -42,6 +42,12 @@ class GUISchwarzP(wx.Frame):
         init_to = "10.0"
         init_size = "250"
 
+        options = [
+            "Schwarz P",
+            "Schwarz D",
+        ]
+        self.cb_option = wx.ComboBox(self, -1, options[0], choices=options, style=wx.CB_READONLY)
+
         # Dir X
         lbl_from_x = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
         self.spin_from_x = wx.SpinCtrlDouble(
@@ -132,6 +138,7 @@ class GUISchwarzP(wx.Frame):
         sizer_dirs.Add(sizer_dirz, 0, wx.ALL, 5)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer.Add(self.cb_option, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(sizer_dirs, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(self.image_panel, 2, wx.EXPAND | wx.ALL,  5)
         main_sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
@@ -142,6 +149,8 @@ class GUISchwarzP(wx.Frame):
 
     def _bind_events(self):
         self.image_panel.Bind(wx.EVT_PAINT, self.OnPaint)
+
+        self.cb_option.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
 
         self.spin_from_x.Bind(wx.EVT_SPINCTRLDOUBLE, self.OnSetValues)
         self.spin_to_x.Bind(wx.EVT_SPINCTRLDOUBLE, self.OnSetValues)
@@ -171,7 +180,10 @@ class GUISchwarzP(wx.Frame):
         end_z = self.spin_to_z.GetValue()
         size_z = self.spin_size_z.GetValue()
 
-        self.np_img = np2bitmap(schwarzp.create_schwarzp(init_x, end_x, init_y, end_y, 1.0, 1.0, size_x, size_y, 1)[0])
+        if self.cb_option.GetValue() == "Schwarz P":
+            self.np_img = np2bitmap(schwarzp.create_schwarzp(init_x, end_x, init_y, end_y, 1.0, 1.0, size_x, size_y, 1)[0])
+        elif self.cb_option.GetValue() == "Schwarz D":
+            self.np_img = np2bitmap(schwarzp.create_schwarzd(init_x, end_x, init_y, end_y, 1.0, 1.0, size_x, size_y, 1)[0])
 
     def OnCancel(self, evt):
         self.Destroy()
@@ -189,13 +201,22 @@ class GUISchwarzP(wx.Frame):
         end_z = self.spin_to_z.GetValue()
         size_z = self.spin_size_z.GetValue()
 
-        schwarp_f = schwarzp.create_schwarzp(
-            init_x, end_x,
-            init_y, end_y,
-            init_z, end_z,
-            size_x,
-            size_y,
-            size_z)
+        if self.cb_option.GetValue() == "Schwarz P":
+            schwarp_f = schwarzp.create_schwarzp(
+                init_x, end_x,
+                init_y, end_y,
+                init_z, end_z,
+                size_x,
+                size_y,
+                size_z)
+        elif self.cb_option.GetValue() == "Schwarz D":
+            schwarp_f = schwarzp.create_schwarzd(
+                init_x, end_x,
+                init_y, end_y,
+                init_z, end_z,
+                size_x,
+                size_y,
+                size_z)
         schwarp_i16 = imagedata_utils.imgnormalize(schwarp_f, (-1000, 1000))
         Publisher.sendMessage(
             "Create project from matrix", name="SchwarzP", matrix=schwarp_i16
