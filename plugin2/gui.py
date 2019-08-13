@@ -45,6 +45,7 @@ class GUISchwarzP(wx.Frame):
         options = [
             "Schwarz P",
             "Schwarz D",
+            "Blobs",
         ]
         self.cb_option = wx.ComboBox(self, -1, options[0], choices=options, style=wx.CB_READONLY)
 
@@ -184,6 +185,8 @@ class GUISchwarzP(wx.Frame):
             self.np_img = np2bitmap(schwarzp.create_schwarzp(init_x, end_x, init_y, end_y, 1.0, 1.0, size_x, size_y, 1)[0])
         elif self.cb_option.GetValue() == "Schwarz D":
             self.np_img = np2bitmap(schwarzp.create_schwarzd(init_x, end_x, init_y, end_y, 1.0, 1.0, size_x, size_y, 1)[0])
+        elif self.cb_option.GetValue() == "Blobs":
+            self.np_img = np2bitmap(schwarzp.blobs(size_x, size_y, 1)[0])
 
     def OnCancel(self, evt):
         self.Destroy()
@@ -217,6 +220,8 @@ class GUISchwarzP(wx.Frame):
                 size_x,
                 size_y,
                 size_z)
+        elif self.cb_option.GetValue() == "Blobs":
+            schwarp_f = schwarzp.blobs(size_x, size_y, size_z)
         schwarp_i16 = imagedata_utils.imgnormalize(schwarp_f, (-1000, 1000))
         Publisher.sendMessage(
             "Create project from matrix", name="SchwarzP", matrix=schwarp_i16
