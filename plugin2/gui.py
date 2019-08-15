@@ -28,9 +28,9 @@ def np2bitmap(arr):
     return image.ConvertToBitmap()
 
 
-class GUISchwarzP(wx.Frame):
-    def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, title="Schwarz-P creation", style=wx.MINIMIZE_BOX | wx.CLOSE_BOX)
+class GUISchwarzP(wx.Dialog):
+    def __init__(self, parent, title='Schwarz-P creation', style=wx.DEFAULT_DIALOG_STYLE|wx.FRAME_FLOAT_ON_PARENT|wx.STAY_ON_TOP):
+        wx.Dialog.__init__(self, parent, -1, title=title, style=style)
 
         self.np_img = None
         self._init_gui()

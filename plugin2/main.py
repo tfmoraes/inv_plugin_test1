@@ -4,6 +4,5 @@ from . import gui
 
 
 def load():
-    g = gui.GUISchwarzP(None)
+    g = gui.GUISchwarzP(wx.GetApp().GetTopWindow())
     g.Show()
-
