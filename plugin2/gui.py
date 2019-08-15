@@ -56,43 +56,43 @@ class GUISchwarzP(wx.Frame):
         # Dir X
         lbl_from_x = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
         self.spin_from_x = wx.SpinCtrlDouble(
-            self, -1, init_from, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_from, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_to_x = wx.StaticText(self, -1, "To:", style=wx.ALIGN_RIGHT)
         self.spin_to_x = wx.SpinCtrlDouble(
-            self, -1, init_to, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_x = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
         self.spin_size_x = wx.SpinCtrl(
-            self, -1, init_size, min=50, max=1000
+            self, -1, value=init_size, min=50, max=1000
         )
 
         # Dir Y
         lbl_from_y = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
         self.spin_from_y = wx.SpinCtrlDouble(
-            self, -1, init_from, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_from, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_to_y = wx.StaticText(self, -1, "To:", style=wx.ALIGN_RIGHT)
         self.spin_to_y = wx.SpinCtrlDouble(
-            self, -1, init_to, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_y = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
         self.spin_size_y = wx.SpinCtrl(
-            self, -1, init_size, min=50, max=1000
+            self, -1, value=init_size, min=50, max=1000
         )
 
         # Dir Z
         lbl_from_z = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
         self.spin_from_z = wx.SpinCtrlDouble(
-            self, -1, init_from, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_from, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_to_z = wx.StaticText(self, -1, "To:", style=wx.ALIGN_RIGHT)
         self.spin_to_z = wx.SpinCtrlDouble(
-            self, -1, init_to, min=-1000.0, max=1000.0, inc=0.1
+            self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_z = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
         self.spin_size_z = wx.SpinCtrl(
-            self, -1, init_size, min=50, max=1000
+            self, -1, value=init_size, min=50, max=1000
         )
 
 
@@ -154,6 +154,7 @@ class GUISchwarzP(wx.Frame):
 
     def _bind_events(self):
         self.image_panel.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.image_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
 
         self.cb_option.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
 
@@ -241,10 +242,13 @@ class GUISchwarzP(wx.Frame):
 
     def OnSetValues(self, evt):
         self.update_image()
-        self.Refresh()
+        self.image_panel.Refresh()
+
+    def OnEraseBackground(self, evt):
+        pass
 
     def OnPaint(self, evt):
-        dc = wx.BufferedPaintDC(self.image_panel)
+        dc = wx.PaintDC(self.image_panel)
         dc.SetBackground(wx.Brush('Black'))
         dc.Clear()
         if self.np_img is not None:
