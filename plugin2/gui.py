@@ -186,7 +186,7 @@ class GUISchwarzP(wx.Frame):
         size_z = self.spin_size_z.GetValue()
 
         if self.cb_option.GetValue() == 'Blobs':
-            self.np_img = np2bitmap(schwarzp.create_blobs(size_x, size_y, 1))
+            self.np_img = np2bitmap(schwarzp.create_blobs(size_x, size_y, 1)[0])
         else:
             self.np_img = np2bitmap(schwarzp.create_schwarzp(
                 self.cb_option.GetValue(),
@@ -244,11 +244,18 @@ class GUISchwarzP(wx.Frame):
         self.Refresh()
 
     def OnPaint(self, evt):
-        if self.np_img is None:
-            pass
+        dc = wx.BufferedPaintDC(self.image_panel)
+        dc.SetBackground(wx.Brush('Black'))
+        dc.Clear()
+        if self.np_img is not None:
+            self.render_image(dc)
 
-        gc = wx.GraphicsContext.Create(self.image_panel)
-        gc.DrawBitmap(self.np_img, 0, 0, 256, 256)
+    def render_image(self, dc):
+        psx, psy = self.image_panel.GetSize()
+        isx, isy = self.np_img.GetSize()
+        cx, cy = psx/2.0 - isx/2.0, psy/2.0 - isy/2.0
+        gc = wx.GraphicsContext.Create(dc)
+        gc.DrawBitmap(self.np_img, cx, cy, 256, 256)
         gc.Flush()
 
 
