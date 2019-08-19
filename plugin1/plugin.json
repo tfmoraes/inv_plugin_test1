@@ -1,4 +1,5 @@
 {
     "name": "Teste1",
-    "description": "Just a plugin test"
+    "description": "Just a plugin test",
+    "enable-startup": false
 }

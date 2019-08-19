@@ -1,4 +1,5 @@
 {
-    "name": "Schwarz-P",
-    "description": "Just a plugin test"
+    "name": "Porous volume creation",
+    "description": "Create porous volume",
+    "enable-startup": true
 }
