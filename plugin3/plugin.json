@@ -1,0 +1,5 @@
+{
+    "name": "Orthogonal",
+    "description": "Creates a new project with the actual project image orthogonalized",
+    "enable-startup": false
+}
