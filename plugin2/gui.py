@@ -154,7 +154,7 @@ class GUISchwarzP(wx.Dialog):
 
     def _bind_events(self):
         self.image_panel.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.image_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+        #  self.image_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
 
         self.cb_option.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
 
@@ -250,7 +250,6 @@ class GUISchwarzP(wx.Dialog):
     def OnPaint(self, evt):
         dc = wx.PaintDC(self.image_panel)
         dc.SetBackground(wx.Brush('Black'))
-        dc.Clear()
         if self.np_img is not None:
             self.render_image(dc)
 
@@ -259,7 +258,7 @@ class GUISchwarzP(wx.Dialog):
         isx, isy = self.np_img.GetSize()
         cx, cy = psx/2.0 - isx/2.0, psy/2.0 - isy/2.0
         gc = wx.GraphicsContext.Create(dc)
-        gc.DrawBitmap(self.np_img, cx, cy, 256, 256)
+        gc.DrawBitmap(self.np_img, cx, cy, isx, isy)
         gc.Flush()
 
 
