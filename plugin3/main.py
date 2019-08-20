@@ -3,6 +3,7 @@ import wx
 from wx.lib.pubsub import pub as Publisher
 
 import invesalius.data.slice_ as slc
+from invesalius import project
 
 from . import gui
 
@@ -10,11 +11,7 @@ from . import gui
 def make_orthogonal(matrix, old_spacing, new_spacing):
     zooms = [i / j for (i, j) in zip(old_spacing, new_spacing)]
     new_image = nd.zoom(
-        matrix,
-        zooms[::-1],
-        output=matrix.dtype,
-        mode="constant",
-        cval=matrix.min(),
+        matrix, zooms[::-1], output=matrix.dtype, mode="constant", cval=matrix.min()
     )
     print(f"Spacing: {old_spacing} -> {new_spacing}")
     print(f"Shape: {matrix.shape} -> {new_image.shape}")
@@ -23,7 +20,9 @@ def make_orthogonal(matrix, old_spacing, new_spacing):
 
 def load():
     s = slc.Slice()
+    p = project.Project()
 
+    new_name = "{}_changed_spacing".format(p.name)
     image_matrix = s.matrix
     spacing = s.spacing
     min_spacing = min(spacing)
@@ -37,5 +36,9 @@ def load():
         new_image = make_orthogonal(image_matrix, spacing, new_spacing)
 
         Publisher.sendMessage(
-            "Create project from matrix", name="Test", matrix=new_image, spacing=new_spacing
+            "Create project from matrix",
+            name=new_name,
+            matrix=new_image,
+            spacing=new_spacing,
         )
+    g.Destroy()
