@@ -1,5 +1,6 @@
 import vtk
 import wx
+import numpy as np
 from six import with_metaclass
 from wx.lib.pubsub import pub as Publisher
 
@@ -7,6 +8,7 @@ import invesalius.constants as const
 import invesalius.data.cursor_actors as ca
 import invesalius.utils as utils
 from invesalius.data import styles
+from sklearn.tree import DecisionTreeClassifier
 
 BRUSH_FOREGROUND = 1
 BRUSH_BACKGROUND = 2
@@ -60,6 +62,11 @@ class ClassificationConfig(with_metaclass(utils.Singleton, object)):
         self.mg_size = size
 
 
+class Classifier(with_metaclass(utils.Singleton, object)):
+    def __init__(self):
+        self.clf = DecisionTreeClassifier(max_depth=5)
+
+
 class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
     def __init__(self, viewer):
         super().__init__(viewer)
@@ -67,16 +74,17 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         self.viewer = viewer
         self.orientation = self.viewer.orientation
         self.matrix = None
-        self.fill_value = 1
+        self.fill_value = BRUSH_FOREGROUND
         self.config = ClassificationConfig()
+        self.classifier = Classifier()
 
     def SetUp(self):
         self._create_mask()
         self.viewer.slice_.to_show_aux = "classify"
         self.viewer.slice_.aux_matrices_colours[self.viewer.slice_.to_show_aux] = {
-            0: (0.0, 0.0, 0.0, 0.0),
-            1: (0.0, 1.0, 0.0, 1.0),
-            2: (1.0, 0.0, 0.0, 1.0),
+            BRUSH_ERASE: (0.0, 0.0, 0.0, 0.0),
+            BRUSH_FOREGROUND: (0.0, 1.0, 0.0, 1.0),
+            BRUSH_BACKGROUND: (1.0, 0.0, 0.0, 1.0),
         }
         self.viewer.OnScrollBar()
 
@@ -94,7 +102,7 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
     def CleanUp(self):
         # self._remove_mask()
         #  Publisher.unsubscribe(
-            #  self.expand_watershed, "Expand watershed to 3D " + self.orientation
+        #  self.expand_watershed, "Expand watershed to 3D " + self.orientation
         #  )
         #  Publisher.unsubscribe(self.set_bformat, "Set watershed brush format")
         #  Publisher.unsubscribe(self.set_bsize, "Set watershed brush size")
@@ -123,17 +131,34 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
     def before_brush_click(self):
         iren = self.viewer.interactor
         if iren.GetControlKey():
-            self.fill_value = 2
+            self.fill_value = BRUSH_BACKGROUND
         elif iren.GetShiftKey():
-            self.fill_value = 0
+            self.fill_value = BRUSH_ERASE
         else:
-            self.fill_value = 1
+            self.fill_value = BRUSH_FOREGROUND
 
     def before_brush_move(self):
         iren = self.viewer.interactor
         if iren.GetControlKey():
-            self.fill_value = 2
+            self.fill_value = BRUSH_BACKGROUND
         elif iren.GetShiftKey():
-            self.fill_value = 0
+            self.fill_value = BRUSH_ERASE
         else:
-            self.fill_value = 1
+            self.fill_value = BRUSH_FOREGROUND
+
+    def after_brush_release(self):
+        if BRUSH_FOREGROUND in self.matrix and BRUSH_BACKGROUND in self.matrix:
+            image = self.viewer.slice_.matrix
+            values_marker1 = image[self.matrix == BRUSH_FOREGROUND]
+            values_marker2 = image[self.matrix == BRUSH_BACKGROUND]
+            clf_values = np.empty(values_marker1.shape[0] + values_marker2.shape[0])
+            clf_values[:values_marker1.shape[0]] = BRUSH_FOREGROUND
+            clf_values[values_marker1.shape[0]:] = BRUSH_BACKGROUND
+            values_markers = np.append(values_marker1, values_marker2)
+            print(clf_values.shape, values_markers.shape)
+            mask = self.viewer.slice_.current_mask.matrix[1:, 1:, 1:]
+            clf = DecisionTreeClassifier(max_depth=5)
+            clf.fit(values_markers.reshape(-1, 1), clf_values)
+            Z = clf.predict(image.flatten().reshape(-1, 1))
+            Z.shape = image.shape
+            mask[Z == BRUSH_FOREGROUND] = 254
