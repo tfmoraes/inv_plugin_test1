@@ -70,9 +70,6 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         self.fill_value = 1
         self.config = ClassificationConfig()
 
-        self.AddObserver("LeftButtonPressEvent", self.OnBrushClick)
-        self.AddObserver("MouseMoveEvent", self.OnBrushMove)
-
     def SetUp(self):
         self._create_mask()
         self.viewer.slice_.to_show_aux = "classify"
@@ -123,7 +120,7 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
             os.remove(self.temp_file)
             print("deleting", self.temp_file)
 
-    def OnBrushClick(self, obj, evt):
+    def before_brush_click(self):
         iren = self.viewer.interactor
         if iren.GetControlKey():
             self.fill_value = 2
@@ -132,7 +129,7 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         else:
             self.fill_value = 1
 
-    def OnBrushMove(self, obj, evt):
+    def before_brush_move(self):
         iren = self.viewer.interactor
         if iren.GetControlKey():
             self.fill_value = 2
