@@ -65,6 +65,10 @@ class ClassificationConfig(with_metaclass(utils.Singleton, object)):
 class Classifier(with_metaclass(utils.Singleton, object)):
     def __init__(self):
         self.clf = DecisionTreeClassifier(max_depth=5)
+        self.gx = None
+        self.gy = None
+        self.gz = None
+        self.gm = None
 
 
 class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
@@ -77,6 +81,15 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         self.fill_value = BRUSH_FOREGROUND
         self.config = ClassificationConfig()
         self.classifier = Classifier()
+
+        if self.classifier.gx is None:
+            image = self.viewer.slice_.matrix
+            gz, gy, gx = np.gradient(image)
+            gm = np.sqrt(gx**2 + gy**2 + gz**2)
+            self.classifier.gx = np.nan_to_num(gx / gm)
+            self.classifier.gy = np.nan_to_num(gy / gm)
+            self.classifier.gz = np.nan_to_num(gz / gm)
+            self.classifier.gm = gm
 
     def SetUp(self):
         self._create_mask()
@@ -154,11 +167,34 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
             clf_values = np.empty(values_marker1.shape[0] + values_marker2.shape[0])
             clf_values[:values_marker1.shape[0]] = BRUSH_FOREGROUND
             clf_values[values_marker1.shape[0]:] = BRUSH_BACKGROUND
-            values_markers = np.append(values_marker1, values_marker2)
-            print(clf_values.shape, values_markers.shape)
-            mask = self.viewer.slice_.current_mask.matrix[1:, 1:, 1:]
-            clf = DecisionTreeClassifier(max_depth=5)
-            clf.fit(values_markers.reshape(-1, 1), clf_values)
-            Z = clf.predict(image.flatten().reshape(-1, 1))
+
+            values_markers = np.empty((values_marker1.shape[0] + values_marker2.shape[0], 5))
+
+            values_markers[:values_marker1.shape[0], 0] = values_marker1
+            values_markers[:values_marker1.shape[0], 1] = self.classifier.gx[self.matrix == BRUSH_FOREGROUND]
+            values_markers[:values_marker1.shape[0], 2] = self.classifier.gy[self.matrix == BRUSH_FOREGROUND]
+            values_markers[:values_marker1.shape[0], 3] = self.classifier.gz[self.matrix == BRUSH_FOREGROUND]
+            values_markers[:values_marker1.shape[0], 4] = self.classifier.gm[self.matrix == BRUSH_FOREGROUND]
+
+            values_markers[values_marker1.shape[0]:, 0] = values_marker2
+            values_markers[values_marker1.shape[0]:, 1] = self.classifier.gx[self.matrix == BRUSH_BACKGROUND]
+            values_markers[values_marker1.shape[0]:, 2] = self.classifier.gy[self.matrix == BRUSH_BACKGROUND]
+            values_markers[values_marker1.shape[0]:, 3] = self.classifier.gz[self.matrix == BRUSH_BACKGROUND]
+            values_markers[values_marker1.shape[0]:, 4] = self.classifier.gm[self.matrix == BRUSH_BACKGROUND]
+
+            clf = DecisionTreeClassifier(max_depth=100)
+            clf.fit(values_markers, clf_values)
+
+            input_array = np.empty((image.size, 5))
+            input_array[:, 0] = image.flatten()
+            input_array[:, 1] = self.classifier.gx.flatten()
+            input_array[:, 2] = self.classifier.gy.flatten()
+            input_array[:, 3] = self.classifier.gz.flatten()
+            input_array[:, 4] = self.classifier.gm.flatten()
+
+            Z = clf.predict(input_array)
             Z.shape = image.shape
+
+            mask = self.viewer.slice_.current_mask.matrix[1:, 1:, 1:]
             mask[Z == BRUSH_FOREGROUND] = 254
+            mask[Z == BRUSH_BACKGROUND] = 1
