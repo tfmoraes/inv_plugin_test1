@@ -1,7 +1,11 @@
+# distutils: language = c++
+
 import numpy as np
 cimport numpy as np
 cimport cython
 from cython.parallel import prange
+from libcpp.vector cimport vector
+from libcpp cimport bool
 
 ctypedef fused image_t:
     np.int16_t
@@ -39,3 +43,13 @@ def simple_lbp(np.ndarray[image_t, ndim=3] image):
     cy_simple_lbp(image, out)
     print(np.unique(out))
     return out
+
+
+def test_2():
+    cdef vector[bool] manolo
+    manolo.push_back(True)
+    manolo.push_back(False)
+    manolo.push_back(False)
+    manolo.push_back(True)
+
+    return manolo

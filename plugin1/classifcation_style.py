@@ -9,6 +9,7 @@ import invesalius.data.cursor_actors as ca
 import invesalius.utils as utils
 from invesalius.data import styles
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 import imageio
 
@@ -68,7 +69,7 @@ class ClassificationConfig(with_metaclass(utils.Singleton, object)):
 
 class Classifier(with_metaclass(utils.Singleton, object)):
     def __init__(self):
-        self.clf = DecisionTreeClassifier(max_depth=5)
+        self.clf = RandomForestClassifier()
         self.image = None
         self.lbp_image = None
         self.gx = None
