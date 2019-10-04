@@ -91,16 +91,16 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
 
         if self.classifier.image is None:
             image = styles.get_LUT_value_255(self.viewer.slice_.matrix, self.viewer.slice_.window_width, self.viewer.slice_.window_level)
-            gz, gy, gx = np.gradient(image)
-            gm = np.sqrt(gx**2 + gy**2 + gz**2)
-            self.classifier.gx = np.nan_to_num(gx / gm)
-            self.classifier.gy = np.nan_to_num(gy / gm)
-            self.classifier.gz = np.nan_to_num(gz / gm)
-            self.classifier.gm = gm
+            #  gz, gy, gx = np.gradient(image)
+            #  gm = np.sqrt(gx**2 + gy**2 + gz**2)
+            #  self.classifier.gx = np.nan_to_num(gx / gm)
+            #  self.classifier.gy = np.nan_to_num(gy / gm)
+            #  self.classifier.gz = np.nan_to_num(gz / gm)
+            #  self.classifier.gm = gm
             self.classifier.image = image
             self.classifier.lbp_image = simple_lbp.simple_lbp(image)
 
-            imageio.imsave('/tmp/saida.png', self.classifier.lbp_image[155])
+            imageio.imsave('/tmp/saida.png', self.classifier.lbp_image[image.shape[0]//2])
 
     def SetUp(self):
         self._create_mask()
@@ -180,17 +180,17 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
             clf_values[:values_marker1.shape[0]] = BRUSH_FOREGROUND
             clf_values[values_marker1.shape[0]:] = BRUSH_BACKGROUND
 
-            values_markers = np.empty((values_marker1.shape[0] + values_marker2.shape[0], 1))
+            values_markers = np.empty((values_marker1.shape[0] + values_marker2.shape[0], 3))
 
             #  values_markers[:values_marker1.shape[0], 0] = values_marker1
-            values_markers[:values_marker1.shape[0], 0] = lbp_image[self.matrix == BRUSH_FOREGROUND]
+            values_markers[:values_marker1.shape[0]] = lbp_image[self.matrix == BRUSH_FOREGROUND]
             #  values_markers[:values_marker1.shape[0], 1] = self.classifier.gx[self.matrix == BRUSH_FOREGROUND]
             #  values_markers[:values_marker1.shape[0], 2] = self.classifier.gy[self.matrix == BRUSH_FOREGROUND]
             #  values_markers[:values_marker1.shape[0], 3] = self.classifier.gz[self.matrix == BRUSH_FOREGROUND]
             #  values_markers[:values_marker1.shape[0], 4] = self.classifier.gm[self.matrix == BRUSH_FOREGROUND]
 
             #  values_markers[values_marker1.shape[0]:, 0] = values_marker2
-            values_markers[values_marker1.shape[0]:, 0] = lbp_image[self.matrix == BRUSH_BACKGROUND]
+            values_markers[values_marker1.shape[0]:] = lbp_image[self.matrix == BRUSH_BACKGROUND]
             #  values_markers[values_marker1.shape[0]:, 1] = self.classifier.gx[self.matrix == BRUSH_BACKGROUND]
             #  values_markers[values_marker1.shape[0]:, 2] = self.classifier.gy[self.matrix == BRUSH_BACKGROUND]
             #  values_markers[values_marker1.shape[0]:, 3] = self.classifier.gz[self.matrix == BRUSH_BACKGROUND]
@@ -199,9 +199,9 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
             clf = DecisionTreeClassifier(max_depth=100)
             clf.fit(values_markers, clf_values)
 
-            input_array = np.empty((image.size, 1))
+            input_array = np.empty((image.size, 3))
             #  input_array[:, 0] = image.flatten()
-            input_array[:, 0] = lbp_image.flatten()
+            input_array[:] = lbp_image.reshape((-1, 3))
             #  input_array[:, 2] = self.classifier.gy.flatten()
             #  input_array[:, 3] = self.classifier.gz.flatten()
             #  input_array[:, 4] = self.classifier.gm.flatten()
