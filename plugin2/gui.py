@@ -129,6 +129,9 @@ class GUISchwarzP(wx.Dialog):
         self.image_panel = wx.Panel(self, -1)
         self.image_panel.SetMinSize(sizer_dirz.CalcMin())
 
+        self.cb_new_inv_instance = wx.CheckBox(self, -1, "Launch new InVesalius instance")
+        self.cb_new_inv_instance.SetValue(True)
+
         self.button_ok = wx.Button(self, wx.ID_OK)
         self.button_cancel = wx.Button(self, wx.ID_CANCEL)
 
@@ -146,6 +149,7 @@ class GUISchwarzP(wx.Dialog):
         main_sizer.Add(self.cb_option, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(sizer_dirs, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(self.image_panel, 2, wx.EXPAND | wx.ALL,  5)
+        main_sizer.Add(self.cb_new_inv_instance, 0, wx.EXPAND | wx.ALL,  5)
         main_sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         self.SetSizer(main_sizer)
