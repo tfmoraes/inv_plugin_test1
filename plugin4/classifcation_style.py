@@ -10,7 +10,7 @@ import invesalius.utils as utils
 from invesalius.data import styles
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from scipy.ndimage import generate_binary_structure
+from scipy.ndimage import generate_binary_structure, gaussian_filter
 
 import imageio
 
@@ -92,7 +92,7 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         self.classifier = Classifier()
 
         if self.classifier.image is None:
-            image = styles.get_LUT_value_255(self.viewer.slice_.matrix, self.viewer.slice_.window_width, self.viewer.slice_.window_level)
+            image = gaussian_filter(self.viewer.slice_.matrix, 1.5)
             #  gz, gy, gx = np.gradient(image)
             #  gm = np.sqrt(gx**2 + gy**2 + gz**2)
             #  self.classifier.gx = np.nan_to_num(gx / gm)
@@ -102,7 +102,9 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
             self.classifier.image = image
             self.classifier.lbp_image = simple_lbp.simple_lbp(image)
 
-            imageio.imsave('/tmp/saida.png', self.classifier.lbp_image[image.shape[0]//2])
+            imageio.imsave(
+                "/tmp/saida.png", self.classifier.lbp_image[image.shape[0] // 2]
+            )
 
     def SetUp(self):
         self._create_mask()
@@ -178,7 +180,9 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         strct = np.array(generate_binary_structure(3, 1), dtype=np.uint8)
         print(mean_lbp, std_dist)
         print("BEFORE MARKED", (mask == BRUSH_FOREGROUND).sum())
-        out = floodfill.texture_floodfill(lbp_image, mask, mean_lbp, BRUSH_FOREGROUND, 0.25, strct)
+        out = floodfill.texture_floodfill(
+            lbp_image, mask, mean_lbp, BRUSH_FOREGROUND, std_dist, strct
+        )
         print("AFTER MARKED", (out == BRUSH_FOREGROUND).sum())
         image_mask = self.viewer.slice_.current_mask.matrix
         image_mask[1:, 1:, 1:] = out * 255
@@ -186,13 +190,13 @@ class ClassificationStyle(styles.BaseImageEditionInteractorStyle):
         image_mask[:, 0, :] = 255
         image_mask[:, :, 0] = 255
 
-        self.viewer.slice_.buffer_slices['AXIAL'].discard_mask()
-        self.viewer.slice_.buffer_slices['CORONAL'].discard_mask()
-        self.viewer.slice_.buffer_slices['SAGITAL'].discard_mask()
+        self.viewer.slice_.buffer_slices["AXIAL"].discard_mask()
+        self.viewer.slice_.buffer_slices["CORONAL"].discard_mask()
+        self.viewer.slice_.buffer_slices["SAGITAL"].discard_mask()
 
-        self.viewer.slice_.buffer_slices['AXIAL'].discard_vtk_mask()
-        self.viewer.slice_.buffer_slices['CORONAL'].discard_vtk_mask()
-        self.viewer.slice_.buffer_slices['SAGITAL'].discard_vtk_mask()
+        self.viewer.slice_.buffer_slices["AXIAL"].discard_vtk_mask()
+        self.viewer.slice_.buffer_slices["CORONAL"].discard_vtk_mask()
+        self.viewer.slice_.buffer_slices["SAGITAL"].discard_vtk_mask()
 
         self.viewer.slice_.current_mask.was_edited = True
-        Publisher.sendMessage('Reload actual slice')
+        Publisher.sendMessage("Reload actual slice")

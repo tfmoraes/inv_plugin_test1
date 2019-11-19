@@ -3,9 +3,8 @@
 
 import numpy as np
 import wx
-from wx.lib.pubsub import pub as Publisher
-
 from invesalius.data import imagedata_utils
+from wx.lib.pubsub import pub as Publisher
 
 from . import schwarzp
 
@@ -29,7 +28,12 @@ def np2bitmap(arr):
 
 
 class GUISchwarzP(wx.Dialog):
-    def __init__(self, parent, title='Schwarz-P creation', style=wx.DEFAULT_DIALOG_STYLE|wx.FRAME_FLOAT_ON_PARENT|wx.STAY_ON_TOP):
+    def __init__(
+        self,
+        parent,
+        title="Schwarz-P creation",
+        style=wx.DEFAULT_DIALOG_STYLE | wx.FRAME_FLOAT_ON_PARENT | wx.STAY_ON_TOP,
+    ):
         wx.Dialog.__init__(self, parent, -1, title=title, style=style)
 
         self.np_img = None
@@ -46,12 +50,14 @@ class GUISchwarzP(wx.Dialog):
             "Schwarz P",
             "Schwarz D",
             "Gyroid",
-            'Neovius',
-            'iWP',
-            'P_W_Hybrid',
+            "Neovius",
+            "iWP",
+            "P_W_Hybrid",
             "Blobs",
         ]
-        self.cb_option = wx.ComboBox(self, -1, options[0], choices=options, style=wx.CB_READONLY)
+        self.cb_option = wx.ComboBox(
+            self, -1, options[0], choices=options, style=wx.CB_READONLY
+        )
 
         # Dir X
         lbl_from_x = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
@@ -63,9 +69,7 @@ class GUISchwarzP(wx.Dialog):
             self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_x = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
-        self.spin_size_x = wx.SpinCtrl(
-            self, -1, value=init_size, min=50, max=1000
-        )
+        self.spin_size_x = wx.SpinCtrl(self, -1, value=init_size, min=50, max=1000)
 
         # Dir Y
         lbl_from_y = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
@@ -77,9 +81,7 @@ class GUISchwarzP(wx.Dialog):
             self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_y = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
-        self.spin_size_y = wx.SpinCtrl(
-            self, -1, value=init_size, min=50, max=1000
-        )
+        self.spin_size_y = wx.SpinCtrl(self, -1, value=init_size, min=50, max=1000)
 
         # Dir Z
         lbl_from_z = wx.StaticText(self, -1, "From:", style=wx.ALIGN_RIGHT)
@@ -91,10 +93,7 @@ class GUISchwarzP(wx.Dialog):
             self, -1, value=init_to, min=-1000.0, max=1000.0, inc=0.1
         )
         lbl_size_z = wx.StaticText(self, -1, "Size:", style=wx.ALIGN_RIGHT)
-        self.spin_size_z = wx.SpinCtrl(
-            self, -1, value=init_size, min=50, max=1000
-        )
-
+        self.spin_size_z = wx.SpinCtrl(self, -1, value=init_size, min=50, max=1000)
 
         sizer_dirx = wx.StaticBoxSizer(
             wx.StaticBox(self, -1, "Direction X"), wx.VERTICAL
@@ -129,7 +128,9 @@ class GUISchwarzP(wx.Dialog):
         self.image_panel = wx.Panel(self, -1)
         self.image_panel.SetMinSize(sizer_dirz.CalcMin())
 
-        self.cb_new_inv_instance = wx.CheckBox(self, -1, "Launch new InVesalius instance")
+        self.cb_new_inv_instance = wx.CheckBox(
+            self, -1, "Launch new InVesalius instance"
+        )
         self.cb_new_inv_instance.SetValue(True)
 
         self.button_ok = wx.Button(self, wx.ID_OK)
@@ -148,8 +149,8 @@ class GUISchwarzP(wx.Dialog):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add(self.cb_option, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(sizer_dirs, 0, wx.EXPAND | wx.ALL, 5)
-        main_sizer.Add(self.image_panel, 2, wx.EXPAND | wx.ALL,  5)
-        main_sizer.Add(self.cb_new_inv_instance, 0, wx.EXPAND | wx.ALL,  5)
+        main_sizer.Add(self.image_panel, 2, wx.EXPAND | wx.ALL, 5)
+        main_sizer.Add(self.cb_new_inv_instance, 0, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         self.SetSizer(main_sizer)
@@ -190,17 +191,23 @@ class GUISchwarzP(wx.Dialog):
         end_z = self.spin_to_z.GetValue()
         size_z = self.spin_size_z.GetValue()
 
-        if self.cb_option.GetValue() == 'Blobs':
+        if self.cb_option.GetValue() == "Blobs":
             self.np_img = np2bitmap(schwarzp.create_blobs(size_x, size_y, 1)[0])
         else:
-            self.np_img = np2bitmap(schwarzp.create_schwarzp(
-                self.cb_option.GetValue(),
-                init_x, end_x,
-                init_y, end_y,
-                1.0, 1.0,
-                size_x,
-                size_y,
-                1)[0])
+            self.np_img = np2bitmap(
+                schwarzp.create_schwarzp(
+                    self.cb_option.GetValue(),
+                    init_x,
+                    end_x,
+                    init_y,
+                    end_y,
+                    1.0,
+                    1.0,
+                    size_x,
+                    size_y,
+                    1,
+                )[0]
+            )
 
     def OnCancel(self, evt):
         self.Destroy()
@@ -218,30 +225,29 @@ class GUISchwarzP(wx.Dialog):
         end_z = self.spin_to_z.GetValue()
         size_z = self.spin_size_z.GetValue()
 
-        if self.cb_option.GetValue() == 'Blobs':
+        if self.cb_option.GetValue() == "Blobs":
             schwarp_f = schwarzp.create_blobs(size_x, size_y, size_z)
         else:
             schwarp_f = schwarzp.create_schwarzp(
                 self.cb_option.GetValue(),
-                init_x, end_x,
-                init_y, end_y,
-                init_z, end_z,
+                init_x,
+                end_x,
+                init_y,
+                end_y,
+                init_z,
+                end_z,
                 size_x,
                 size_y,
-                size_z)
+                size_z,
+            )
 
         schwarp_i16 = imagedata_utils.imgnormalize(schwarp_f, (-1000, 1000))
         Publisher.sendMessage(
-            "Create project from matrix", name="SchwarzP", matrix=schwarp_i16
+            "Create project from matrix",
+            name="SchwarzP",
+            matrix=schwarp_i16,
+            new_instance=self.cb_new_inv_instance.GetValue(),
         )
-
-        Publisher.sendMessage('Bright and contrast adjustment image',
-                window=255, level=127)
-        Publisher.sendMessage('Update window level value',
-                              window=255,
-                              level=127)
-        Publisher.sendMessage('Update slice viewer')
-
         self.Close()
 
     def OnSetValues(self, evt):
@@ -253,18 +259,17 @@ class GUISchwarzP(wx.Dialog):
 
     def OnPaint(self, evt):
         dc = wx.PaintDC(self.image_panel)
-        dc.SetBackground(wx.Brush('Black'))
+        dc.SetBackground(wx.Brush("Black"))
         if self.np_img is not None:
             self.render_image(dc)
 
     def render_image(self, dc):
         psx, psy = self.image_panel.GetSize()
         isx, isy = self.np_img.GetSize()
-        cx, cy = psx/2.0 - isx/2.0, psy/2.0 - isy/2.0
+        cx, cy = psx / 2.0 - isx / 2.0, psy / 2.0 - isy / 2.0
         gc = wx.GraphicsContext.Create(dc)
         gc.DrawBitmap(self.np_img, cx, cy, isx, isy)
         gc.Flush()
-
 
 
 class MyApp(wx.App):
@@ -273,7 +278,6 @@ class MyApp(wx.App):
         self.SetTopWindow(self.GUISchwarzP)
         self.GUISchwarzP.Show()
         return True
-
 
 
 if __name__ == "__main__":

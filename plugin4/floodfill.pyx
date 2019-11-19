@@ -98,10 +98,10 @@ cdef _texture_floodfill(np.ndarray[np.uint8_t, ndim=4] lbp_image, np.ndarray[mas
                     if strct[k, j, i]:
                         xo = x + i - offset_x
                         if 0 <= xo < dx and 0 <= yo < dy and 0 <= zo < dz and out[zo, yo, xo] != fill:
-                            #  dist = ((value[0] - lbp_image[zo, yo, xo, 0])*(value[0] - lbp_image[zo, yo, xo, 0]) \
-                                    #  +   (value[1] - lbp_image[zo, yo, xo, 1])*(value[1] - lbp_image[zo, yo, xo, 1]) \
-                                    #  +   (value[2] - lbp_image[zo, yo, xo, 2])*(value[2] - lbp_image[zo, yo, xo, 2]))
-                            dist = 1 - (value[0]*lbp_image[zo, yo, xo, 0] + value[1]*lbp_image[zo, yo, xo, 1] + value[2]*lbp_image[zo, yo, xo, 2]) / (sqrt(value[0]**2 + value[1]**2 + value[2]**2) * sqrt(lbp_image[zo, yo, xo, 0]**2 + lbp_image[zo, yo, xo, 1]**2 + lbp_image[zo, yo, xo, 2]**2))
+                            dist = ((value[0] - lbp_image[zo, yo, xo, 0])*(value[0] - lbp_image[zo, yo, xo, 0]) \
+                                    +   (value[1] - lbp_image[zo, yo, xo, 1])*(value[1] - lbp_image[zo, yo, xo, 1]) \
+                                    +   (value[2] - lbp_image[zo, yo, xo, 2])*(value[2] - lbp_image[zo, yo, xo, 2]))
+                            #  dist = 1 - (value[0]*lbp_image[zo, yo, xo, 0] + value[1]*lbp_image[zo, yo, xo, 1] + value[2]*lbp_image[zo, yo, xo, 2]) / (sqrt(value[0]**2 + value[1]**2 + value[2]**2) * sqrt(lbp_image[zo, yo, xo, 0]**2 + lbp_image[zo, yo, xo, 1]**2 + lbp_image[zo, yo, xo, 2]**2))
                                 #  print(stack.size(), values.shape[0], xo, yo, zo, n, dist)
                             if dist <= (max_dist * max_dist):
                                 out[zo, yo, xo] = fill
