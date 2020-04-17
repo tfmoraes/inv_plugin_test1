@@ -4,7 +4,7 @@
 import numpy as np
 import wx
 from invesalius.data import imagedata_utils
-from wx.lib.pubsub import pub as Publisher
+from pubsub import pub as Publisher
 
 from . import schwarzp
 

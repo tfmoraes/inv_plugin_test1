@@ -1,5 +1,5 @@
 import wx
-from wx.lib.pubsub import pub as Publisher
+from pubsub import pub as Publisher
 
 
 class GUIIsotropic(wx.Dialog):

@@ -1,6 +1,6 @@
 import scipy.ndimage as nd
 import wx
-from wx.lib.pubsub import pub as Publisher
+from pubsub import pub as Publisher
 
 import invesalius.data.slice_ as slc
 from invesalius import project
