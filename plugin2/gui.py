@@ -42,8 +42,8 @@ class GUISchwarzP(wx.Dialog):
         self.update_image()
 
     def _init_gui(self):
-        init_from = "-10.0"
-        init_to = "10.0"
+        init_from = "-10"
+        init_to = "10"
         init_size = "250"
 
         options = [
