@@ -34,11 +34,13 @@ def load():
     if g.ShowModal() == wx.ID_OK:
         new_spacing = (g.spacing_new_x, g.spacing_new_y, g.spacing_new_z)
         new_image = make_orthogonal(image_matrix, spacing, new_spacing)
+        new_instance = g.cb_new_inv_instance.GetValue()
 
         Publisher.sendMessage(
             "Create project from matrix",
             name=new_name,
             matrix=new_image,
             spacing=new_spacing,
+            new_instance=new_instance
         )
     g.Destroy()

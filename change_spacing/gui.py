@@ -59,6 +59,11 @@ class GUIIsotropic(wx.Dialog):
         self.check_isotropic = wx.CheckBox(self, -1, "Isotropic")
         self.check_isotropic.SetValue(True)
 
+        self.cb_new_inv_instance = wx.CheckBox(
+            self, -1, "Launch new InVesalius instance"
+        )
+        self.cb_new_inv_instance.SetValue(True)
+
         self.button_ok = wx.Button(self, wx.ID_OK)
         self.button_cancel = wx.Button(self, wx.ID_CANCEL)
 
@@ -103,6 +108,7 @@ class GUIIsotropic(wx.Dialog):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add(content_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
         main_sizer.Add(self.check_isotropic, 0, wx.RIGHT | wx.ALIGN_RIGHT, 7)
+        main_sizer.Add(self.cb_new_inv_instance, 0, wx.RIGHT | wx.ALIGN_RIGHT, 7)
         main_sizer.Add(button_sizer, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         self.SetSizer(main_sizer)
