@@ -16,7 +16,7 @@ def np2bitmap(arr):
     except ValueError:
         height, width = arr.shape
         bands = 3
-        arr = imagedata_utils.imgnormalize(arr, (0, 255))
+        arr = imagedata_utils.image_normalize(arr, 0, 255)
         npimg = np.zeros((height, width, bands), dtype=np.uint8)
         npimg[:, :, 0] = arr
         npimg[:, :, 1] = arr
