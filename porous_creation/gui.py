@@ -54,6 +54,7 @@ class GUISchwarzP(wx.Dialog):
             "iWP",
             "P_W_Hybrid",
             "Blobs",
+            "Voronoy",
         ]
         self.cb_option = wx.ComboBox(
             self, -1, options[0], choices=options, style=wx.CB_READONLY
@@ -193,6 +194,8 @@ class GUISchwarzP(wx.Dialog):
 
         if self.cb_option.GetValue() == "Blobs":
             self.np_img = np2bitmap(schwarzp.create_blobs(size_x, size_y, 1)[0])
+        elif self.cb_option.GetValue() == "Voronoy":
+            self.np_img = np2bitmap(schwarzp.create_voronoy(size_x, size_y, 1)[0])
         else:
             self.np_img = np2bitmap(
                 schwarzp.create_schwarzp(
@@ -227,6 +230,8 @@ class GUISchwarzP(wx.Dialog):
 
         if self.cb_option.GetValue() == "Blobs":
             schwarp_f = schwarzp.create_blobs(size_x, size_y, size_z)
+        elif self.cb_option.GetValue() == "Voronoy":
+            schwarp_f = schwarzp.create_voronoy(size_x, size_y, size_z)
         else:
             schwarp_f = schwarzp.create_schwarzp(
                 self.cb_option.GetValue(),

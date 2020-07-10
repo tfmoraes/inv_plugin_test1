@@ -1,5 +1,8 @@
 import numpy as np
 from scipy import ndimage as nd
+import random
+
+from . import floodfill
 
 
 def create_schwarzp(method, init_x, end_x, init_y, end_y, init_z, end_z, sx=256, sy=256, sz=256):
@@ -25,4 +28,13 @@ def create_schwarzp(method, init_x, end_x, init_y, end_y, init_z, end_z, sx=256,
 def create_blobs(sx=256, sy=256, sz=256):
     random_image = np.random.random((sz, sy, sx))
     image = nd.gaussian_filter(random_image, sigma=5)
+    return image
+
+
+def create_voronoy(sx=256, sy=256, sz=256, number_sites=1000):
+    image = np.zeros((sz, sy, sx), dtype=np.float32)
+    image[:] = -1
+    sites = [(random.randrange(0, sx), random.randrange(0, sy), random.randrange(0, sz)) for i in range(number_sites)]
+    floodfill.floodfill_voronoy(image, sites, np.ones((3, 3, 3), dtype=np.uint8))
+    print(image.min(), image.max())
     return image
