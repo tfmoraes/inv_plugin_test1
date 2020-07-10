@@ -241,7 +241,7 @@ class GUISchwarzP(wx.Dialog):
                 size_z,
             )
 
-        schwarp_i16 = imagedata_utils.imgnormalize(schwarp_f, (-1000, 1000))
+        schwarp_i16 = imagedata_utils.image_normalize(schwarp_f, min_=-1000, max_=1000)
         Publisher.sendMessage(
             "Create project from matrix",
             name="SchwarzP",
