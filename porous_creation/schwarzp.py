@@ -25,9 +25,9 @@ def create_schwarzp(method, init_x, end_x, init_y, end_y, init_z, end_z, sx=256,
         return 4.0 * (np.cos(x) * np.cos(y) + np.cos(y) * np.cos(z) + np.cos(z) * np.cos(x)) - 3 * np.cos(x) * np.cos(y) * np.cos(z) + 2.4
 
 
-def create_blobs(sx=256, sy=256, sz=256):
+def create_blobs(sx=256, sy=256, sz=256, gaussian=5):
     random_image = np.random.random((sz, sy, sx))
-    image = nd.gaussian_filter(random_image, sigma=5)
+    image = nd.gaussian_filter(random_image, sigma=gaussian)
     return image
 
 
