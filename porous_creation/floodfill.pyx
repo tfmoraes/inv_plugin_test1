@@ -12,8 +12,6 @@ from libcpp cimport bool
 from libcpp.deque cimport deque as cdeque
 from libcpp.vector cimport vector
 
-from cy_my_types cimport image_t, mask_t
-
 cdef struct s_coord:
     int x
     int y
@@ -27,7 +25,7 @@ ctypedef s_coord coord
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndarray[mask_t, ndim=3] strct):
+def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndarray[np.uint8_t, ndim=3] strct):
     cdef int x, y, z, sx, sy, sz
     cdef int dx, dy, dz
     cdef int odx, ody, odz
