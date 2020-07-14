@@ -32,7 +32,7 @@ def jump_flooding(int number_sites, int size_x=250, int size_y=250, int size_z=2
     cdef np.ndarray[np.int32_t, ndim=3] map_owners = np.zeros((size_z, size_y, size_x), dtype=np.int32)
     cdef np.ndarray[np.int32_t, ndim=2] sites = np.random.randint((0, 0, 0), (size_z, size_y, size_x), (number_sites, 3), dtype=np.int32)
 
-    cdef int n_steps = int(np.log2(max(size_x, size_y)))
+    cdef int n_steps = int(np.log2(max(size_x, size_y, size_z)))
     cdef int offset_x = size_x // 2
     cdef int offset_y = size_y // 2
     cdef int offset_z = size_z // 2
