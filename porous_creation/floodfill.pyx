@@ -11,6 +11,7 @@ from libc.math cimport floor, ceil
 from libcpp cimport bool
 from libcpp.deque cimport deque as cdeque
 from libcpp.vector cimport vector
+from libc.stdlib cimport abs
 
 cdef struct s_coord:
     int x
@@ -22,10 +23,75 @@ cdef struct s_coord:
 
 ctypedef s_coord coord
 
+
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndarray[np.uint8_t, ndim=3] strct):
+def jump_flooding(int number_sites, int size_x=250, int size_y=250, int size_z=250):
+    cdef np.ndarray[np.float32_t, ndim=3] image_voronoy = np.zeros((size_z, size_y, size_x), dtype=np.float32)
+    cdef np.ndarray[np.int32_t, ndim=3] map_owners = np.zeros((size_z, size_y, size_x), dtype=np.int32)
+    cdef np.ndarray[np.int32_t, ndim=2] sites = np.random.randint((0, 0, 0), (size_z, size_y, size_x), (number_sites, 3), dtype=np.int32)
+
+    cdef int n_steps = int(np.log2(max(size_x, size_y)))
+    cdef int offset_x = size_x // 2
+    cdef int offset_y = size_y // 2
+    cdef int offset_z = size_z // 2
+    cdef int i, z, y, x, zi, yi, xi, sz, sy, sx, z0, y0, x0, z1, y1, x1, idx0, idx1
+    cdef float dist0, dist1
+
+    for i in range(number_sites):
+        z = sites[i, 0]
+        y = sites[i, 1]
+        x = sites[i, 2]
+        map_owners[z, y, x] = i + 1
+
+    for i in range(n_steps):
+        for z in prange(size_z, nogil=True):
+            for y in range(size_y):
+                for x in range(size_x):
+
+                    for zi in range(-1, 2):
+                        for yi in range(-1, 2):
+                            for xi in range(-1, 2):
+
+                                if xi == 0 and yi == 0 and zi == 0:
+                                    continue
+
+                                sz = z + zi*offset_z
+                                sy = y + yi*offset_y
+                                sx = x + xi*offset_x
+
+                                if 0 <= sz < size_z and 0 <= sy < size_y and 0 <= sx < size_x:
+                                    idx0 = map_owners[z, y, x]
+                                    idx1 = map_owners[sz, sy, sx]
+
+                                    if idx1 > 0:
+                                        z1 = sites[idx1 - 1, 0]
+                                        y1 = sites[idx1 - 1, 1]
+                                        x1 = sites[idx1 - 1, 2]
+
+                                        dist0 = image_voronoy[z, y, x]
+                                        dist1 = ((z - z1)**2 + (y - y1)**2 + (x - x1)**2)**0.5
+                                        if idx0 > 0:
+                                            if dist1 < dist0:
+                                                map_owners[z, y, x] = idx1
+                                                z0 = sites[idx1 - 1, 0]
+                                                y0 = sites[idx1 - 1, 1]
+                                                x0 = sites[idx1 - 1, 2]
+                                                image_voronoy[z, y, x] = dist1
+                                        else:
+                                            image_voronoy[z, y, x] = dist1
+                                            map_owners[z, y, x] = idx1
+        offset_x = offset_x // 2
+        offset_y = offset_y // 2
+        offset_z = offset_z // 2
+
+    return image_voronoy
+
+@cython.boundscheck(False) # turn of bounds-checking for entire function
+@cython.wraparound(False)
+@cython.nonecheck(False)
+def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndarray[np.uint8_t, ndim=3] strct, int distance):
     cdef int x, y, z, sx, sy, sz
     cdef int dx, dy, dz
     cdef int odx, ody, odz
@@ -33,6 +99,8 @@ def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndar
     cdef int i, j, k
     cdef int offset_x, offset_y, offset_z
     cdef float dist
+
+    assert(distance <= 1, "Distance not available")
 
     dz = data.shape[0]
     dy = data.shape[1]
@@ -71,7 +139,10 @@ def floodfill_voronoy(np.ndarray[np.float32_t, ndim=3] data, list seeds, np.ndar
             sy = c.sy
             sz = c.sz
 
-            dist = ((x - sx)**2 + (y - sy)**2 + (z - sz)**2)**0.5
+            if distance == 0:
+                dist = ((x - sx)**2 + (y - sy)**2 + (z - sz)**2)**0.5
+            elif distance == 1:
+                dist = abs(x - sx) + abs(y - sy) + abs(z - sz)
             if data[z, y, x] == -1 or dist < data[z, y, x]:
                 data[z, y, x] = dist
                 for k in xrange(odz):

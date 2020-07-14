@@ -31,10 +31,10 @@ def create_blobs(sx=256, sy=256, sz=256, gaussian=5):
     return image
 
 
-def create_voronoy(sx=256, sy=256, sz=256, number_sites=1000):
-    image = np.zeros((sz, sy, sx), dtype=np.float32)
-    image[:] = -1
-    sites = [(random.randrange(0, sx), random.randrange(0, sy), random.randrange(0, sz)) for i in range(number_sites)]
-    floodfill.floodfill_voronoy(image, sites, np.ones((3, 3, 3), dtype=np.uint8))
+def create_voronoy(sx=256, sy=256, sz=256, number_sites=1000, distance=0):
+    #  image = np.zeros((sz, sy, sx), dtype=np.float32)
+    #  image[:] = -1
+    #  sites = [(random.randrange(0, sx), random.randrange(0, sy), random.randrange(0, sz)) for i in range(number_sites)]
+    image = floodfill.jump_flooding(number_sites, sx, sy, sz)
     print(image.min(), image.max())
     return image

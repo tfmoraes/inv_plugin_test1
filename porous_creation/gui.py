@@ -12,6 +12,11 @@ INIT_FROM = "-10"
 INIT_TO = "10"
 INIT_SIZE = "250"
 
+DISTANCE_TYPES = [
+    "Euclidian",
+    "Manhattan"
+]
+
 
 def np2bitmap(arr):
     try:
@@ -120,8 +125,9 @@ class GUISchwarzP(wx.Dialog):
             size_y = self.voronoy_panel.spin_size_y.GetValue()
             size_z = self.voronoy_panel.spin_size_z.GetValue()
             number_sites = self.voronoy_panel.spin_nsites.GetValue()
+            distance = self.voronoy_panel.cb_distance.GetSelection()
             self.np_img = np2bitmap(
-                schwarzp.create_voronoy(size_x, size_y, 1, number_sites)[0]
+                schwarzp.create_voronoy(size_x, size_y, 1, number_sites, distance)[0]
             )
         else:
             init_x = self.schwarp_panel.spin_from_x.GetValue()
@@ -166,7 +172,8 @@ class GUISchwarzP(wx.Dialog):
             size_y = self.voronoy_panel.spin_size_y.GetValue()
             size_z = self.voronoy_panel.spin_size_z.GetValue()
             number_sites = self.voronoy_panel.spin_nsites.GetValue()
-            schwarp_f = schwarzp.create_voronoy(size_x, size_y, size_z, number_sites)
+            distance = self.voronoy_panel.cb_distance.GetSelection()
+            schwarp_f = schwarzp.create_voronoy(size_x, size_y, size_z, number_sites, distance)
         else:
             init_x = self.schwarp_panel.spin_from_x.GetValue()
             end_x = self.schwarp_panel.spin_to_x.GetValue()
@@ -411,7 +418,12 @@ class VoronoyPanel(wx.Panel):
         lbl_gaussian = wx.StaticText(self, -1, "Number of sites:", style=wx.ALIGN_RIGHT)
         self.spin_nsites = wx.SpinCtrl(self, -1, value="1000", min=5, max=1000000)
 
-        main_sizer = wx.FlexGridSizer(rows=4, cols=2, vgap=5, hgap=5)
+        lbl_distance = wx.StaticText(self, -1, "Distance", style=wx.ALIGN_RIGHT)
+        self.cb_distance = wx.ComboBox(
+            self, -1, DISTANCE_TYPES[0], choices=DISTANCE_TYPES, style=wx.CB_READONLY
+        )
+
+        main_sizer = wx.FlexGridSizer(rows=5, cols=2, vgap=5, hgap=5)
         main_sizer.AddMany(
             [
                 (lbl_size_x, 0, wx.ALIGN_CENTER_VERTICAL),
@@ -422,6 +434,8 @@ class VoronoyPanel(wx.Panel):
                 (self.spin_size_z,),
                 (lbl_gaussian, 0, wx.ALIGN_CENTER_VERTICAL),
                 (self.spin_nsites,),
+                (lbl_distance, 0, wx.ALIGN_CENTER_VERTICAL),
+                (self.cb_distance,),
             ]
         )
 
@@ -434,6 +448,7 @@ class VoronoyPanel(wx.Panel):
         self.spin_size_y.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
         self.spin_size_z.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
         self.spin_nsites.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
+        self.cb_distance.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
 
     def OnSetValues(self, evt):
         self.Parent.OnSetValues(evt)
