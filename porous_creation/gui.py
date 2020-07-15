@@ -125,9 +125,10 @@ class GUISchwarzP(wx.Dialog):
             size_y = self.voronoy_panel.spin_size_y.GetValue()
             size_z = self.voronoy_panel.spin_size_z.GetValue()
             number_sites = self.voronoy_panel.spin_nsites.GetValue()
-            distance = self.voronoy_panel.cb_distance.GetSelection()
+            #  distance = self.voronoy_panel.cb_distance.GetSelection()
+            normalize = self.voronoy_panel.cb_normalize.GetValue()
             self.np_img = np2bitmap(
-                schwarzp.create_voronoy(size_x, size_y, 1, number_sites, distance)[0]
+                schwarzp.create_voronoy(size_x, size_y, 1, number_sites, normalize)[0]
             )
         else:
             init_x = self.schwarp_panel.spin_from_x.GetValue()
@@ -172,8 +173,9 @@ class GUISchwarzP(wx.Dialog):
             size_y = self.voronoy_panel.spin_size_y.GetValue()
             size_z = self.voronoy_panel.spin_size_z.GetValue()
             number_sites = self.voronoy_panel.spin_nsites.GetValue()
-            distance = self.voronoy_panel.cb_distance.GetSelection()
-            schwarp_f = schwarzp.create_voronoy(size_x, size_y, size_z, number_sites, distance)
+            #  distance = self.voronoy_panel.cb_distance.GetSelection()
+            normalize = self.voronoy_panel.cb_normalize.GetValue()
+            schwarp_f = schwarzp.create_voronoy(size_x, size_y, size_z, number_sites, normalize)
         else:
             init_x = self.schwarp_panel.spin_from_x.GetValue()
             end_x = self.schwarp_panel.spin_to_x.GetValue()
@@ -418,10 +420,15 @@ class VoronoyPanel(wx.Panel):
         lbl_gaussian = wx.StaticText(self, -1, "Number of sites:", style=wx.ALIGN_RIGHT)
         self.spin_nsites = wx.SpinCtrl(self, -1, value="1000", min=5, max=1000000)
 
-        lbl_distance = wx.StaticText(self, -1, "Distance", style=wx.ALIGN_RIGHT)
-        self.cb_distance = wx.ComboBox(
-            self, -1, DISTANCE_TYPES[0], choices=DISTANCE_TYPES, style=wx.CB_READONLY
+        #  lbl_distance = wx.StaticText(self, -1, "Distance", style=wx.ALIGN_RIGHT)
+        #  self.cb_distance = wx.ComboBox(
+            #  self, -1, DISTANCE_TYPES[0], choices=DISTANCE_TYPES, style=wx.CB_READONLY
+        #  )
+
+        self.cb_normalize = wx.CheckBox(
+            self, -1, "Normalize"
         )
+        self.cb_normalize.SetValue(True)
 
         main_sizer = wx.FlexGridSizer(rows=5, cols=2, vgap=5, hgap=5)
         main_sizer.AddMany(
@@ -434,8 +441,9 @@ class VoronoyPanel(wx.Panel):
                 (self.spin_size_z,),
                 (lbl_gaussian, 0, wx.ALIGN_CENTER_VERTICAL),
                 (self.spin_nsites,),
-                (lbl_distance, 0, wx.ALIGN_CENTER_VERTICAL),
-                (self.cb_distance,),
+                #  (lbl_distance, 0, wx.ALIGN_CENTER_VERTICAL),
+                #  (self.cb_distance,),
+                (self.cb_normalize,),
             ]
         )
 
@@ -448,7 +456,8 @@ class VoronoyPanel(wx.Panel):
         self.spin_size_y.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
         self.spin_size_z.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
         self.spin_nsites.Bind(wx.EVT_SPINCTRL, self.OnSetValues)
-        self.cb_distance.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
+        #  self.cb_distance.Bind(wx.EVT_COMBOBOX, self.OnSetValues)
+        self.cb_normalize.Bind(wx.EVT_CHECKBOX, self.OnSetValues)
 
     def OnSetValues(self, evt):
         self.Parent.OnSetValues(evt)

@@ -27,10 +27,14 @@ ctypedef s_coord coord
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def jump_flooding(int number_sites, int size_x=250, int size_y=250, int size_z=250):
+@cython.cdivision(True)
+def jump_flooding(int number_sites, int size_x=250, int size_y=250, int size_z=250, bool normalize=True):
     cdef np.ndarray[np.float32_t, ndim=3] image_voronoy = np.zeros((size_z, size_y, size_x), dtype=np.float32)
     cdef np.ndarray[np.int32_t, ndim=3] map_owners = np.zeros((size_z, size_y, size_x), dtype=np.int32)
     cdef np.ndarray[np.int32_t, ndim=2] sites = np.random.randint((0, 0, 0), (size_z, size_y, size_x), (number_sites, 3), dtype=np.int32)
+    cdef np.ndarray[np.int32_t, ndim=1] counts = np.zeros(number_sites, dtype=np.int32)
+    cdef np.ndarray[np.int32_t, ndim=2] new_sites = np.zeros((number_sites, 3), dtype=np.int32)
+    cdef np.ndarray[np.float32_t, ndim=1] max_dists = np.zeros(number_sites, dtype=np.float32)
 
     cdef int n_steps = int(np.log2(max(size_x, size_y, size_z)))
     cdef int offset_x = size_x // 2
@@ -86,7 +90,44 @@ def jump_flooding(int number_sites, int size_x=250, int size_y=250, int size_z=2
         offset_y = offset_y // 2
         offset_z = offset_z // 2
 
+    if normalize:
+        print("finding centers")
+        for z in range(size_z):
+            for y in range(size_y):
+                for x in range(size_x):
+                    idx0 = map_owners[z, y, x] - 1
+                    counts[idx0] += 1
+                    new_sites[idx0, 0] += z
+                    new_sites[idx0, 1] += y
+                    new_sites[idx0, 2] += x
+
+        print("setting centers")
+        for i in range(number_sites):
+            if counts[i] > 0:
+                new_sites[i, 0] /= counts[i]
+                new_sites[i, 1] /= counts[i]
+                new_sites[i, 2] /= counts[i]
+
+        print("recalculating dists")
+        for z in range(size_z):
+            for y in range(size_y):
+                for x in range(size_x):
+                    idx0 = map_owners[z, y, x] - 1
+                    z0 = new_sites[idx0, 0]
+                    y0 = new_sites[idx0, 1]
+                    x0 = new_sites[idx0, 2]
+                    image_voronoy[z, y, x] = ((z - z0)**2 + (y - y0)**2 + (x - x0)**2)**0.5
+                    max_dists[idx0] = max(max_dists[idx0], image_voronoy[z, y, x])
+
+        print("Normalizing")
+        for z in range(size_z):
+            for y in range(size_y):
+                for x in range(size_x):
+                    idx0 = map_owners[z, y, x] - 1
+                    image_voronoy[z, y, x] /= max_dists[idx0]
+
     return image_voronoy
+
 
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False)
