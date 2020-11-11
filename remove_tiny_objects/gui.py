@@ -1,14 +1,16 @@
-import wx
-import scipy.ndimage as nd
 import tempfile
-import numpy as np
-
-from pubsub import pub as Publisher
 
 import invesalius.data.slice_ as slc
+import numpy as np
+import scipy.ndimage as nd
+import wx
 from invesalius import project
+from pubsub import pub as Publisher
+
+from . import count
 
 INIT_MIN_SIZE = "10"
+
 
 class Window(wx.Dialog):
     def __init__(
@@ -37,27 +39,23 @@ class Window(wx.Dialog):
         self.mask = s.current_mask
         if self.mask:
             labels, num_labels = self._find_regions(self.mask.matrix[1:, 1:, 1:])
+            counts = count.count_regions(labels, num_labels)
             self.txt_num_regions.SetValue(str(num_labels))
 
             if self.preview_matrix is None:
                 _tmp, self.preview_matrix = self.create_temp_mask()
 
-            self.labels = labels
+            self.counts = counts
             self.num_labels = num_labels
-            s.aux_matrices['REMOVE_TINY'] = self.preview_matrix
-            s.to_show_aux = 'REMOVE_TINY'
+            s.aux_matrices["REMOVE_TINY"] = self.preview_matrix
+            s.to_show_aux = "REMOVE_TINY"
 
             self._update_preview_matrix()
 
     def _update_preview_matrix(self):
         min_size = self.txt_min_size.GetValue()
-        for i in range(1, self.num_labels + 1):
-            labels = ( self.labels == i)
-            if labels.sum() <= min_size:
-                self.preview_matrix[labels] = 255
-
-        Publisher.sendMessage('Reload actual slice')
-
+        self.preview_matrix[self.counts <= min_size] = 255
+        Publisher.sendMessage("Reload actual slice")
 
     def _init_gui(self):
         self.txt_min_size = wx.SpinCtrl(
@@ -87,7 +85,9 @@ class Window(wx.Dialog):
     def create_temp_mask(self):
         temp_file = tempfile.mktemp()
         sz, sy, sx = self.mask.matrix.shape
-        matrix = np.memmap(temp_file, mode="w+", dtype="uint8", shape=(sz - 1, sy - 1, sx - 1))
+        matrix = np.memmap(
+            temp_file, mode="w+", dtype="uint8", shape=(sz - 1, sy - 1, sx - 1)
+        )
         return temp_file, matrix
 
     def OnSetMinSize(self, evt):
