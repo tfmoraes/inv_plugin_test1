@@ -29,6 +29,8 @@ class Window(wx.Dialog):
         self._bind_events()
 
         self._find_regions_actual_mask()
+        if self.mask:
+            self.mask.add_modified_callback(self.on_modified_mask)
 
     def _find_regions(self, matrix):
         labels, num_labels = nd.label(matrix)
@@ -91,4 +93,9 @@ class Window(wx.Dialog):
         return temp_file, matrix
 
     def OnSetMinSize(self, evt):
+        self._update_preview_matrix()
+
+    def on_modified_mask(self):
+        print("On modified mask")
+        self._find_regions_actual_mask()
         self._update_preview_matrix()
