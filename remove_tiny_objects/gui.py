@@ -54,7 +54,7 @@ class Window(wx.Dialog):
 
     def _update_preview_matrix(self):
         min_size = self.txt_min_size.GetValue()
-        self.preview_matrix[self.counts <= min_size] = 255
+        self.preview_matrix[:] = (self.counts <= min_size) * 255
         Publisher.sendMessage("Reload actual slice")
 
     def _init_gui(self):

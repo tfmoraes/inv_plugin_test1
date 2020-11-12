@@ -18,8 +18,7 @@ ctypedef fused label_t:
 @cython.wraparound(False)
 cdef void _count(label_t[:, :, :] image, int number_regions, np.uint32_t[:, :, :] out):
     cdef unsigned int dx, dy, dz, x, y, z
-    cdef vector[int] counts
-    counts.reserve(number_regions)
+    cdef np.uint32_t[:] counts = np.zeros(number_regions, dtype=np.uint32)
     dx = image.shape[2]
     dy = image.shape[1]
     dz = image.shape[0]
