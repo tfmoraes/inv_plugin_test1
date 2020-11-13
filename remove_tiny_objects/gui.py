@@ -41,6 +41,7 @@ class Window(wx.Dialog):
         s = slc.Slice()
         self.mask = s.current_mask
         if self.mask:
+            s.do_threshold_to_all_slices()
             labels, num_labels = self._find_regions(self.mask.matrix[1:, 1:, 1:])
             counts = count.count_regions(labels, num_labels)
             self.txt_num_regions.SetValue(str(num_labels))
@@ -67,6 +68,8 @@ class Window(wx.Dialog):
 
         self.txt_num_regions = wx.TextCtrl(self, -1, "0")
 
+        self.btn_remove = wx.Button(self, -1, "Remove")
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(
             wx.StaticText(self, -1, "Maximum size to remove"), 0, wx.EXPAND | wx.ALL, 5
@@ -78,12 +81,15 @@ class Window(wx.Dialog):
         )
         sizer.Add(self.txt_num_regions, 1, wx.EXPAND | wx.ALL, 5)
 
+        sizer.Add(self.btn_remove, 1, wx.EXPAND | wx.ALL, 5)
+
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.Layout()
 
     def _bind_events(self):
         self.txt_min_size.Bind(wx.EVT_SPINCTRL, self.OnSetMinSize)
+        self.btn_remove.Bind(wx.EVT_BUTTON, self.OnRemove)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def create_temp_mask(self):
@@ -124,3 +130,13 @@ class Window(wx.Dialog):
             Publisher.sendMessage("Reload actual slice")
 
         evt.Skip()
+
+    def OnRemove(self, evt):
+        if self.mask and self.preview_matrix is not None:
+            s = slc.Slice()
+            s.discard_all_buffers()
+            m = self.mask.matrix[1:, 1:, 1:]
+            m[self.preview_matrix > 127] = 1
+            self.mask.was_edited = True
+            self.preview_matrix[:] = 0
+            Publisher.sendMessage("Reload actual slice")
