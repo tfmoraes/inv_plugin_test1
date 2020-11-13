@@ -1,3 +1,4 @@
+import os
 import tempfile
 
 import invesalius.data.slice_ as slc
@@ -83,6 +84,7 @@ class Window(wx.Dialog):
 
     def _bind_events(self):
         self.txt_min_size.Bind(wx.EVT_SPINCTRL, self.OnSetMinSize)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def create_temp_mask(self):
         temp_file = tempfile.mktemp()
@@ -99,3 +101,26 @@ class Window(wx.Dialog):
         print("On modified mask")
         self._find_regions_actual_mask()
         self._update_preview_matrix()
+
+    def OnClose(self, evt):
+        if self.mask:
+            removed = self.mask.remove_modified_callback(self.on_modified_mask)
+            print(f"It was removed? {removed}")
+
+            s = slc.Slice()
+            if self.preview_matrix is not None:
+                filename = self.preview_matrix.filename
+                del self.preview_matrix
+                os.remove(filename)
+
+            try:
+                del s.aux_matrices["REMOVE_TINY"]
+            except KeyError:
+                pass
+
+            if s.to_show_aux == "REMOVE_TINY":
+                s.to_show_aux = ""
+
+            Publisher.sendMessage("Reload actual slice")
+
+        evt.Skip()
