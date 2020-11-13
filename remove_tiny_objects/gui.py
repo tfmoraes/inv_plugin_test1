@@ -135,8 +135,10 @@ class Window(wx.Dialog):
         if self.mask and self.preview_matrix is not None:
             s = slc.Slice()
             s.discard_all_buffers()
+            cp_mask = self.mask.matrix.copy()
             m = self.mask.matrix[1:, 1:, 1:]
             m[self.preview_matrix > 127] = 1
             self.mask.was_edited = True
             self.preview_matrix[:] = 0
+            self.mask.save_history(0, 'VOLUME', self.mask.matrix.copy(), cp_mask)
             Publisher.sendMessage("Reload actual slice")
