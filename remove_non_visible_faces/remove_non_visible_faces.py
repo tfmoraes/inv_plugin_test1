@@ -79,7 +79,10 @@ def remove_non_visible_faces(
         for i in range(id_list.GetNumberOfIds()):
             cells_ids.add(id_list.GetId(i))
 
-    id_list = numpy_support.numpy_to_vtkIdTypeArray(np.array(list(cells_ids)))
+    try:
+        id_list = numpy_support.numpy_to_vtkIdTypeArray(np.array(list(cells_ids)))
+    except ValueError:
+        id_list = vtk.vtkIdTypeArray()
 
     selection_node = vtk.vtkSelectionNode()
     selection_node.SetFieldType(vtk.vtkSelectionNode.CELL)
