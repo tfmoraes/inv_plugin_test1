@@ -6,6 +6,8 @@ import wx
 from invesalius import project
 from pubsub import pub as Publisher
 from invesalius.gui.utils import calc_width_needed
+from .remove_non_visible_faces import remove_non_visible_faces
+from invesalius.utils import new_name_by_pattern
 
 
 class Window(wx.Dialog):
@@ -81,8 +83,13 @@ class Window(wx.Dialog):
         self.Destroy()
 
     def on_apply(self, evt):
-        surface = self.surfaces_combo.GetValue()
-        print("applying", surface)
+        inv_proj = project.Project()
+        idx = self.surfaces_combo.GetSelection()
+        surface = inv_proj.surface_dict[idx]
+        remove_visible = self.remove_visible_check.GetValue()
+        new_polydata = remove_non_visible_faces(surface.polydata, remove_visible=remove_visible)
+        name = new_name_by_pattern(f"{surface.name}_removed_nonvisible")
+        Publisher.sendMessage('Create surface from polydata', polydata=new_polydata, name=name)
 
     def on_update_surfaces(self, *args, **kwargs):
         self.fill_surfaces_combo()
