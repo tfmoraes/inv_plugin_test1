@@ -80,7 +80,7 @@ def remove_non_visible_faces(
             cells_ids.add(id_list.GetId(i))
 
     try:
-        id_list = numpy_support.numpy_to_vtkIdTypeArray(np.array(list(cells_ids)))
+        id_list = numpy_support.numpy_to_vtkIdTypeArray(np.array(list(cells_ids), dtype=np.int64))
     except ValueError:
         id_list = vtk.vtkIdTypeArray()
 
