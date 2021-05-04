@@ -59,16 +59,12 @@ def remove_non_visible_faces(
         id_points = numpy_support.vtk_to_numpy(
             output.GetPointData().GetAbstractArray("vtkIdFilter_Ids")
         )
-        #  print(output)
         if set_points is None:
             set_points = set(id_points.tolist())
         else:
             set_points.update(id_points.tolist())
         #  id_list = vtk.vtkIdList()
         #  output.GetVerts().GetCell(1000, id_list)
-        #  #  print(output.GetCell(23122).GetPointIds().GetId(0))
-        #  print(output.GetPointData())
-        #  print(id_list.GetId(0))
 
     if remove_visible:
         set_points = set(range(polydata.GetNumberOfPoints())) - set_points
@@ -97,8 +93,6 @@ def remove_non_visible_faces(
     extract_selection.SetInputData(1, selection)
     extract_selection.Update()
 
-    print(extract_selection.GetOutput())
-
     geometry_filter = vtk.vtkGeometryFilter()
     geometry_filter.SetInputData(extract_selection.GetOutput())
     geometry_filter.Update()
@@ -106,9 +100,6 @@ def remove_non_visible_faces(
     clean_polydata = vtk.vtkCleanPolyData()
     clean_polydata.SetInputData(geometry_filter.GetOutput())
     clean_polydata.Update()
-
-    print(geometry_filter.GetOutput())
-    print(clean_polydata.GetOutput())
 
     return clean_polydata.GetOutput()
 
