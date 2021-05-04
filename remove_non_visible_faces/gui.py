@@ -1,13 +1,10 @@
-import os
-import tempfile
-
 import wx
-
 from invesalius import project
-from pubsub import pub as Publisher
 from invesalius.gui.utils import calc_width_needed
-from .remove_non_visible_faces import remove_non_visible_faces
 from invesalius.utils import new_name_by_pattern
+from pubsub import pub as Publisher
+
+from .remove_non_visible_faces import remove_non_visible_faces
 
 
 class Window(wx.Dialog):
@@ -24,7 +21,9 @@ class Window(wx.Dialog):
 
     def _init_gui(self):
         self.surfaces_combo = wx.ComboBox(self, -1, style=wx.CB_READONLY)
-        self.surfaces_combo.SetMinClientSize((calc_width_needed(self.surfaces_combo, 25), -1))
+        self.surfaces_combo.SetMinClientSize(
+            (calc_width_needed(self.surfaces_combo, 25), -1)
+        )
         self.overwrite_check = wx.CheckBox(self, -1, "Overwrite surface")
         self.remove_visible_check = wx.CheckBox(self, -1, "Remove visible faces")
         self.apply_button = wx.Button(self, wx.ID_APPLY, "Apply")
@@ -60,9 +59,9 @@ class Window(wx.Dialog):
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
     def _bind_ps_events(self):
-        Publisher.subscribe(self.on_update_surfaces, 'Update surface info in GUI')
-        Publisher.subscribe(self.on_update_surfaces, 'Remove surfaces')
-        Publisher.subscribe(self.on_update_surfaces, 'Change surface name')
+        Publisher.subscribe(self.on_update_surfaces, "Update surface info in GUI")
+        Publisher.subscribe(self.on_update_surfaces, "Remove surfaces")
+        Publisher.subscribe(self.on_update_surfaces, "Change surface name")
 
     def fill_surfaces_combo(self):
         inv_proj = project.Project()
@@ -71,7 +70,7 @@ class Window(wx.Dialog):
             initial_value = choices[0]
             enable = True
         except IndexError:
-            initial_value = ''
+            initial_value = ""
             enable = False
 
         self.surfaces_combo.SetItems(choices)
@@ -85,14 +84,36 @@ class Window(wx.Dialog):
     def on_apply(self, evt):
         inv_proj = project.Project()
         idx = self.surfaces_combo.GetSelection()
-        surface = inv_proj.surface_dict[idx]
+        surface = list(inv_proj.surface_dict.values())[idx]
         remove_visible = self.remove_visible_check.GetValue()
-        new_polydata = remove_non_visible_faces(surface.polydata, remove_visible=remove_visible)
-        name = new_name_by_pattern(f"{surface.name}_removed_nonvisible")
-        Publisher.sendMessage('Create surface from polydata', polydata=new_polydata, name=name)
+        overwrite = self.overwrite_check.GetValue()
+        new_polydata = remove_non_visible_faces(
+            surface.polydata, remove_visible=remove_visible
+        )
+        if overwrite:
+            name = surface.name
+            colour = surface.colour
+            index = surface.index
+        else:
+            name = new_name_by_pattern(f"{surface.name}_removed_nonvisible")
+            colour = None
+            index = None
+        Publisher.sendMessage(
+            "Create surface from polydata",
+            polydata=new_polydata,
+            name=name,
+            overwrite=overwrite,
+            index=idx,
+            colour=colour,
+        )
 
     def on_update_surfaces(self, *args, **kwargs):
+        last_idx = self.surfaces_combo.GetSelection()
         self.fill_surfaces_combo()
+        if last_idx < len(self.surfaces_combo.GetItems()):
+            self.surfaces_combo.SetSelection(last_idx)
+        else:
+            self.surfaces_combo.SetSelection(0)
 
 
 if __name__ == "__main__":
