@@ -106,6 +106,7 @@ class Window(wx.Dialog):
             index=idx,
             colour=colour,
         )
+        Publisher.sendMessage('Fold surface task')
 
     def on_update_surfaces(self, *args, **kwargs):
         last_idx = self.surfaces_combo.GetSelection()
